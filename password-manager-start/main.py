@@ -1,6 +1,7 @@
 from tkinter import *
 import os
 import random
+import pyperclip
 
 BG_COLOUR = "#C5EBAA"
 ADD_BUTTON_COLOR = "#AAC8A7"
@@ -35,6 +36,9 @@ def generate_password():
       password += char
 
     password_entry.insert(0,password)
+
+    pyperclip.copy(password)
+    pyperclip.paste()
 
 
 # ---------------------------- SAVE PASSWORD ------------------------------- #
