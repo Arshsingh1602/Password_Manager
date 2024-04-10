@@ -2,6 +2,7 @@ from tkinter import *
 import os
 import random
 import pyperclip
+import json
 
 BG_COLOUR = "#C5EBAA"
 ADD_BUTTON_COLOR = "#AAC8A7"
@@ -59,6 +60,12 @@ def save():
     website_save = website_entry.get()
     email_save = email_entry.get()
     password_save = password_entry.get()
+    new_data = {
+        website_save:{
+            "email": email_save,
+            "password": password_save,
+        }
+    }
     if website_save == "" or email_save == "" or password_save == "" :
         popup_2 = Toplevel(window, bg=BG_COLOUR)
         popup_2.title("Error")
@@ -66,11 +73,35 @@ def save():
         success_label.pack()
         popup_2.after(1500, lambda: popup_2.destroy())
     else:
-        with open("data.txt","a") as saved:
-            saved.write(f"{website_save}|{email_save}|{password_save}\n")
+        try:
+            with open("data.json","r") as saved:
+                d = json.load(saved)
+        except FileNotFoundError:
+            with open(data.json,"w") as saved:
+                json.dump(new_data,saved,indent=4)
+
+        else:
+            d.update(new_data)
+            with open(data.json,"w") as saved:
+                json.dump(d,saved,indent=4)
+        finally:
             succesful()
             clear()
-
+# ---------------------------FIND PASSWORD----------------------------- #
+def find_password():
+    website = website_entry.get()
+    try:
+        with open("data.json") as data_file:
+            data = json.load(data_file)
+    except:
+        messagebox.showinfo(title="Error",message="File not found.")
+    else:
+        if website in data:
+            email = data[website]["email"]
+            password = data[website]["password"]
+            messagebox.showinfo(title=website, message=f"Email: {email} \nPassword: {password}")
+        else:
+            messagebox.showinfo(title="Error",message=f"No info about the {website}")
 # ---------------------------- UI SETUP ------------------------------- #
 window = Tk()
 window.title("Password Manager")
@@ -123,7 +154,7 @@ website_label = Label(text="Website:", bg=BG_COLOUR, pady=2)
 website_label.grid(row=1, column=0)
 
 website_entry = Entry(width=51)
-website_entry.grid(row=1, column=1, columnspan=2, sticky=W)
+website_entry.grid(row=1, column=1, sticky=W)
 if os.path.getsize("email.txt") != 0:
     website_entry.focus()
 
@@ -147,5 +178,8 @@ password_button.grid(row=3, column=2, sticky=W)
 
 add_button = Button(text="Add", width=43, bg=ADD_BUTTON_COLOR,command=save)
 add_button.grid(row=4, column=1, columnspan=2, pady=4)
+
+search_button = Button(text="Search",width=14, bg=ADD_BUTTON_COLOR)
+search_button.grid(row=2,column=2,columnspan=2,pady=4)
 
 window.mainloop()
